@@ -1,10 +1,10 @@
 /* This file contains the scheduling policy for SCHED
  *
  * The entry points are:
- *   do_noquantum:        Called on behalf of process' that run out of quantum
+ *   do_noquantum:        Called on behalf of processes that run out of quantum
  *   do_start_scheduling  Request to start scheduling a proc
  *   do_stop_scheduling   Request to stop scheduling a proc
- *   do_nice		  Request to change the nice level on a proc
+ *   do_nice		      Request to change the nice level on a proc
  *   init_scheduling      Called from main.c to set up/prepare scheduling
  */
 #include "sched.h"
@@ -23,6 +23,15 @@ FORWARD _PROTOTYPE( int schedule_process, (struct schedproc * rmp)	);
 FORWARD _PROTOTYPE( void balance_queues, (struct timer *tp)		);
 
 #define DEFAULT_USER_TIME_SLICE 200
+
+/*===========================================================================*
+ *				determine_bound				     *
+ *===========================================================================*/
+
+PUBLIC int determine_bound(message *m_ptr)
+{
+	
+}
 
 /*===========================================================================*
  *				do_noquantum				     *
@@ -109,7 +118,7 @@ PUBLIC int do_start_scheduling(message *m_ptr)
 
 	case SCHEDULING_START:
 		/* We have a special case here for system processes, for which
-		 * quanum and priority are set explicitly rather than inherited 
+		 * quantum and priority are set explicitly rather than inherited 
 		 * from the parent */
 		rmp->priority   = rmp->max_priority;
 		rmp->time_slice = (unsigned) m_ptr->SCHEDULING_QUANTUM;
