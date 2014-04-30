@@ -147,8 +147,9 @@ PUBLIC int do_start_scheduling(message *m_ptr)
 *********************************************************************/
 
 /*		rmp->priority = schedproc[parent_nr_n].priority; */
-    rmp->priority = LOSER_QUEUE;
+    	rmp->priority = LOSER_QUEUE;
 		rmp->time_slice = schedproc[parent_nr_n].time_slice;
+		rmp->num_tickets = 20;
 		break;
 		
 	default: 
@@ -207,6 +208,8 @@ PUBLIC int do_nice(message *m_ptr)
 	}
 
 	rmp = &schedproc[proc_nr_n];
+
+	
 	new_q = (unsigned) m_ptr->SCHEDULING_MAXPRIO;
 	if (new_q >= NR_SCHED_QUEUES) {
 		return EINVAL;
