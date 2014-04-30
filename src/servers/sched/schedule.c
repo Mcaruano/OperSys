@@ -1,14 +1,15 @@
 /* This file contains the scheduling policy for SCHED
  *
  * The entry points are:
- *   do_noquantum:        Called on behalf of processes that run out of quantum
+ *   do_noquantum:        Called on behalf of process' that run out of quantum
  *   do_start_scheduling  Request to start scheduling a proc
  *   do_stop_scheduling   Request to stop scheduling a proc
- *   do_nice		      Request to change the nice level on a proc
+ *   do_nice		  Request to change the nice level on a proc
  *   init_scheduling      Called from main.c to set up/prepare scheduling
  */
 #include "sched.h"
 #include "schedproc.h"
+#include <stdio.h>
 #include <assert.h>
 #include <minix/com.h>
 #include <machine/archtypes.h>
@@ -23,15 +24,8 @@ FORWARD _PROTOTYPE( int schedule_process, (struct schedproc * rmp)	);
 FORWARD _PROTOTYPE( void balance_queues, (struct timer *tp)		);
 
 #define DEFAULT_USER_TIME_SLICE 200
-
-/*===========================================================================*
- *				determine_bound				     *
- *===========================================================================*/
-
-PUBLIC int determine_bound(message *m_ptr)
-{
-	
-}
+#define WINNER_QUEUE 13
+#define LOSER_QUEUE 14
 
 /*===========================================================================*
  *				do_noquantum				     *
@@ -49,9 +43,18 @@ PUBLIC int do_noquantum(message *m_ptr)
 	}
 
 	rmp = &schedproc[proc_nr_n];
+
+/********************************************************************
+
+                  MADE CHANGES HERE
+
+*********************************************************************/
+
+/*
 	if (rmp->priority < MIN_USER_Q) {
-		rmp->priority += 1; /* lower priority */
+		rmp->priority += 1; /* lower priority *//*
 	}
+*/
 
 	if ((rv = schedule_process(rmp)) != OK) {
 		return rv;
@@ -118,10 +121,15 @@ PUBLIC int do_start_scheduling(message *m_ptr)
 
 	case SCHEDULING_START:
 		/* We have a special case here for system processes, for which
-		 * quantum and priority are set explicitly rather than inherited 
+		 * quanum and priority are set explicitly rather than inherited 
 		 * from the parent */
 		rmp->priority   = rmp->max_priority;
 		rmp->time_slice = (unsigned) m_ptr->SCHEDULING_QUANTUM;
+
+/****************************************************************/
+    printf("this is considered a special case\n");
+/*****************************************************************/
+
 		break;
 		
 	case SCHEDULING_INHERIT:
@@ -132,7 +140,14 @@ PUBLIC int do_start_scheduling(message *m_ptr)
 				&parent_nr_n)) != OK)
 			return rv;
 
-		rmp->priority = schedproc[parent_nr_n].priority;
+/********************************************************************
+
+                  MADE CHANGES HERE
+
+*********************************************************************/
+
+/*		rmp->priority = schedproc[parent_nr_n].priority; */
+    rmp->priority = LOSER_QUEUE;
 		rmp->time_slice = schedproc[parent_nr_n].time_slice;
 		break;
 		
@@ -179,6 +194,8 @@ PUBLIC int do_nice(message *m_ptr)
 	int proc_nr_n;
 	unsigned new_q, old_q, old_max_q;
 
+  printf("do_nice() was called on process %d\n", m_ptr->m_source);
+
 	/* check who can send you requests */
 	if (!accept_message(m_ptr))
 		return EPERM;
@@ -199,8 +216,15 @@ PUBLIC int do_nice(message *m_ptr)
 	old_q     = rmp->priority;
 	old_max_q = rmp->max_priority;
 
+
+/********************************************************************
+
+                  MADE CHANGES HERE
+
+*********************************************************************/
+
 	/* Update the proc entry and reschedule the process */
-	rmp->max_priority = rmp->priority = new_q;
+/*	rmp->max_priority = rmp->priority = new_q; */
 
 	if ((rv = schedule_process(rmp)) != OK) {
 		/* Something went wrong when rescheduling the process, roll
@@ -258,8 +282,15 @@ PRIVATE void balance_queues(struct timer *tp)
 	for (proc_nr=0, rmp=schedproc; proc_nr < NR_PROCS; proc_nr++, rmp++) {
 		if (rmp->flags & IN_USE) {
 			if (rmp->priority > rmp->max_priority) {
-				rmp->priority -= 1; /* increase priority */
+/********************************************************************
+
+                  MADE CHANGES HERE
+
+*********************************************************************/
+/*
+				rmp->priority -= 1; /* increase priority *//*
 				schedule_process(rmp);
+*/
 			}
 		}
 	}
