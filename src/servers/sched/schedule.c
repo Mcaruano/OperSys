@@ -9,6 +9,8 @@
  */
 #include "sched.h"
 #include "schedproc.h"
+#include <time.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 #include <minix/com.h>
@@ -33,8 +35,13 @@ FORWARD _PROTOTYPE( void balance_queues, (struct timer *tp)		);
 
 PUBLIC int do_noquantum(message *m_ptr)
 {
+
 	register struct schedproc *rmp;
-	int rv, proc_nr_n;
+	int rv, proc_nr_n, proc_nr;
+	int ticket_sum = 0;
+	int random_val = 0;
+
+	srand(time(NULL));	
 
 	if (sched_isokendpt(m_ptr->m_source, &proc_nr_n) != OK) {
 		printf("SCHED: WARNING: got an invalid endpoint in OOQ msg %u.\n",
@@ -44,21 +51,49 @@ PUBLIC int do_noquantum(message *m_ptr)
 
 	rmp = &schedproc[proc_nr_n];
 
-/********************************************************************
-
-                  MADE CHANGES HERE
-
-*********************************************************************/
-
-/*
-	if (rmp->priority < MIN_USER_Q) {
-		rmp->priority += 1; /* lower priority *//*
-	}
-*/
+	rmp->priority = LOSER_QUEUE;
 
 	if ((rv = schedule_process(rmp)) != OK) {
 		return rv;
 	}
+
+    /*Iterate through all processes in loser queue, sum up all of their num_tickets*/
+	for (proc_nr=0, rmp=schedproc; proc_nr < NR_PROCS; proc_nr++, rmp++) 
+	{
+		if (rmp->flags & IN_USE) 
+		{
+			if (rmp->priority == LOSER_QUEUE) 
+			{
+				ticket_sum += rmp->num_tickets;
+			}
+		}
+	}
+
+	/*Generate a random number from 1 - ticket_sum*/
+	random_val = (rand()%ticket_sum) + 1;
+
+	/*Iterate through all processes again in the user queue, and subtract all of their num_tickets from the random number*/
+	for (proc_nr=0, rmp=schedproc; proc_nr < NR_PROCS; proc_nr++, rmp++) 
+	{
+		if (rmp->flags & IN_USE) 
+		{
+			if (rmp->priority == LOSER_QUEUE) 
+			{
+				random_val -= rmp->num_tickets;
+				/*When the random number hits 0 or less, go with that process*/
+				if(random_val <= 0)
+				{
+					rmp->priority = WINNER_QUEUE;
+					break;
+				}
+			}
+		}
+	}
+
+	if ((rv = schedule_process(rmp)) != OK) {
+		return rv;
+	}
+
 	return OK;
 }
 
@@ -121,7 +156,7 @@ PUBLIC int do_start_scheduling(message *m_ptr)
 
 	case SCHEDULING_START:
 		/* We have a special case here for system processes, for which
-		 * quanum and priority are set explicitly rather than inherited 
+		 * quantum and priority are set explicitly rather than inherited 
 		 * from the parent */
 		rmp->priority   = rmp->max_priority;
 		rmp->time_slice = (unsigned) m_ptr->SCHEDULING_QUANTUM;
@@ -207,8 +242,18 @@ PUBLIC int do_nice(message *m_ptr)
 		return EBADEPT;
 	}
 
+	/* add tickets based on nice call, with bounds 1 <= tickets <= 100 */
 	rmp = &schedproc[proc_nr_n];
+	rmp->num_tickets -= m_ptr->SCHEDULING_MAXPRIO;
+	if (rmp->num_tickets > 100) {
+		rmp->num_tickets = 100;
+	}
 
+	if (rmp->num_tickets < 1) {
+		rmp->num_tickets = 1;
+	}
+
+	printf("num tickets = %d, endpoint = %d\n", rmp->num_tickets, rmp->endpoint);
 	
 	new_q = (unsigned) m_ptr->SCHEDULING_MAXPRIO;
 	if (new_q >= NR_SCHED_QUEUES) {
