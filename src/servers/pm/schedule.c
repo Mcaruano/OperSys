@@ -102,8 +102,10 @@ PUBLIC int sched_nice(struct mproc *rmp, int nice)
 	}
 
 	m.SCHEDULING_ENDPOINT	= rmp->mp_endpoint;
+	/* START CHANGES */
 	/* m.SCHEDULING_MAXPRIO	= (int) maxprio; */
 	m.SCHEDULING_MAXPRIO = nice;
+	/* END CHANGES */
 	if ((rv = _taskcall(rmp->mp_scheduler, SCHEDULING_SET_NICE, &m))) {
 		return rv;
 	}

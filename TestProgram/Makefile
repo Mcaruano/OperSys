@@ -1,12 +1,25 @@
 
-all: crunch
+all: crunch fileinit iobound getline
 
 crunch: crunch.c
 	cc crunch.c -o crunch
 
-test: 
+fileinit: fileinit.c
+	cc fileinit.c -o fileinit
+
+iobound: iobound.c
+	cc iobound.c -o iobound
+
+getline: getline.c
+	cc getline.c -o getline
+
+test: crunch
 	time ./crunch &
 	time ./crunch &
 
+combotest: crunch getline
+	./crunch &
+	./getline
+
 clean:
-	rm *.o crunch
+	rm crunch iobound fileinit getline
