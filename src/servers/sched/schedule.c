@@ -76,8 +76,6 @@ PUBLIC int do_noquantum(message *m_ptr)
                         if (rmp->num_tickets > 100) {
                             rmp->num_tickets = 100;
                         }
-
-                        printf("INCREMENT: Endpoint: %d, num_tickets = %d\n", rmp->endpoint, rmp->num_tickets);
                     }
                 }
             }
@@ -93,7 +91,6 @@ PUBLIC int do_noquantum(message *m_ptr)
                 if (rmp->num_tickets < 1) {
                     rmp->num_tickets = 1;
                 }
-                printf("DECREMENT: Endpoint: %d, num_tickets = %d\n", rmp->endpoint, rmp->num_tickets);
             }
         }
 

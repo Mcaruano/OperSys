@@ -1,4 +1,0 @@
-- Iterate through all processes in loser queue, sum up all of their num_tickets
-- Generate a random number from 0 - ticket_sum
-- Iterate through all processes again in the user queue, and subtract all of their num_tickets from the random number
-- When the random number hits 0 or less, go with that process
