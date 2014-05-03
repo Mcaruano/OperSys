@@ -30,6 +30,7 @@ FORWARD _PROTOTYPE( void balance_queues, (struct timer *tp)     );
 /* START CHANGES */
 #define WINNER_QUEUE 13
 #define LOSER_QUEUE 14
+#define STATIC_LOTTERY 0  /*Change to 1 to run static lottery */
 /* END CHANGES */
 
 /*===========================================================================*
@@ -55,36 +56,50 @@ PUBLIC int do_noquantum(message *m_ptr)
 
     rmp = &schedproc[proc_nr_n];
 
-    /* If this process is in the loser queue, if there is a process in the winner queue, give the process in the winning queue a ticket */
-    if(rmp->priority == LOSER_QUEUE){
-        for (proc_nr=0, rmp=schedproc; proc_nr < NR_PROCS; proc_nr++, rmp++) {
-            if (rmp->flags & IN_USE) {
-                if (rmp->priority == WINNER_QUEUE) {
-                    rmp->num_tickets++;
-                    if (rmp->num_tickets > 100) {
-                        rmp->num_tickets = 100;
+    if(!STATIC_LOTTERY){
+        /* If this process is in the loser queue, if there is a process in the winner queue, give the process in the winning queue a ticket */
+        if(rmp->priority == LOSER_QUEUE){
+            for (proc_nr=0, rmp=schedproc; proc_nr < NR_PROCS; proc_nr++, rmp++) {
+                if (rmp->flags & IN_USE) {
+                    if (rmp->priority == WINNER_QUEUE) {
+                        /* ATTEMPTED OPTIMIZATION */
+                        /*rmp->block_count++;
+                        if(rmp->block_count == 5){
+                            rmp->block_count = 0; 
+                            rmp->num_tickets++;
+                            if (rmp->num_tickets > 100) {
+                                rmp->num_tickets = 100;
+                            }
+                        }*/
+
+                        rmp->num_tickets++;
+                        if (rmp->num_tickets > 100) {
+                            rmp->num_tickets = 100;
+                        }
+
+                        printf("INCREMENT: Endpoint: %d, num_tickets = %d\n", rmp->endpoint, rmp->num_tickets);
                     }
-                    /* printf("Endpoint: %d, num_tickets = %d\n", rmp->endpoint, rmp->num_tickets); */
                 }
             }
         }
-    }
 
-    /* If this process used up its quantum in the winner queue, take away a ticket */
-    else if(rmp->priority == WINNER_QUEUE){
-        rmp->num_tickets--;
-        if (rmp->num_tickets < 1) {
-            rmp->num_tickets = 1;
+        /* If this process used up its quantum in the winner queue, take away a ticket */
+        /* Attempted optimization: only decrement a ticket if a process has used its entire quantum from winner queue 5 times */
+        else if(rmp->priority == WINNER_QUEUE){
+            rmp->block_count++;
+            if (rmp->block_count == 5) {
+                rmp->block_count = 0;
+                rmp->num_tickets--;
+                if (rmp->num_tickets < 1) {
+                    rmp->num_tickets = 1;
+                }
+                printf("DECREMENT: Endpoint: %d, num_tickets = %d\n", rmp->endpoint, rmp->num_tickets);
+            }
         }
-        /* printf("Endpoint: %d, num_tickets = %d\n", rmp->endpoint, rmp->num_tickets); */
+
+        rmp = &schedproc[proc_nr_n];
     }
 
-
-    /* END CHANGES */
-
-    rmp = &schedproc[proc_nr_n];
-
-    /* START CHANGES */
     if(rmp->priority >= 13){
 
         rmp->priority = LOSER_QUEUE;
@@ -173,6 +188,7 @@ PUBLIC int do_start_scheduling(message *m_ptr)
             != OK) {
         return rv;
     }
+
     rmp = &schedproc[proc_nr_n];
 
     /* Populate process slot */
@@ -191,11 +207,6 @@ PUBLIC int do_start_scheduling(message *m_ptr)
          * from the parent */
         rmp->priority   = rmp->max_priority;
         rmp->time_slice = (unsigned) m_ptr->SCHEDULING_QUANTUM;
-
-/****************************************************************/
-    printf("this is considered a special case\n");
-/*****************************************************************/
-
         break;
         
     case SCHEDULING_INHERIT:
@@ -212,6 +223,7 @@ PUBLIC int do_start_scheduling(message *m_ptr)
         rmp->time_slice = schedproc[parent_nr_n].time_slice;
         /* printf("The time_slice given to this process is %d\n", rmp->time_slice); */
         rmp->num_tickets = 20;
+        rmp->block_count = 0; /* ATTEMPTED OPTIMIZATION */
         /* END CHANGES */
         break;
         
@@ -227,6 +239,7 @@ PUBLIC int do_start_scheduling(message *m_ptr)
             rmp->endpoint, rv);
         return rv;
     }
+
     rmp->flags = IN_USE;
 
     /* Schedule the process, giving it some quantum */
@@ -362,7 +375,7 @@ PRIVATE void balance_queues(struct timer *tp)
         }
     }*/
 
-    /* START CHANGES */
+    /* END CHANGES */
 
     set_timer(&sched_timer, balance_timeout, balance_queues, 0);
 }

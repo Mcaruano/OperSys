@@ -3,23 +3,22 @@
 
 int main(int argc, char *argv[])
 {
-    unsigned i;
-    FILE* test_file;
-    int input;
+    unsigned i, j;
+    FILE* test_file1;
 
+    test_file1 = fopen("iobound.txt", "w");
+
+    /* Populate the files */
     for(i = 0;; i++){
+        for(j = 0; j < 4000000; j++){ 
+            fprintf(test_file1, "%u \n", j);
+        }
 
-        /* Read huge file */
-        test_file = fopen("bigread.txt", "r");
-
-        do {
-            input = getc(test_file);
-        } while (input != EOF);
-        
-        fclose(test_file);
-
+        rewind(test_file1);
         printf("%d\n", i);
     }
+
+    fclose(test_file1);
 
     return 0;
 }
