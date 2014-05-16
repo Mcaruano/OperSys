@@ -8,6 +8,7 @@
     /*Maybe use this main function to test*//*
 	return 0;
 }*/
+	
 #define MAX_SIZE 134217728
 
 void *slug_malloc ( size_t size, char *WHERE ){
