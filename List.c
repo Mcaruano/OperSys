@@ -596,6 +596,7 @@ void insertAfterLast_test(ListRef L, struct timeval init_time, char *string, int
         newNode->file_and_line = string;
         newNode->in_use = 1;
 
+        /* Debug output */
         double ticks = init_time.tv_sec + init_time.tv_usec * 1e-6;
         printf("insertAfterLast_test init_time: %f\n", ticks);
 
@@ -603,6 +604,7 @@ void insertAfterLast_test(ListRef L, struct timeval init_time, char *string, int
         newNode->tv.tv_sec = newNode->tv.tv_sec - init_time.tv_sec;
         newNode->tv.tv_usec = (newNode->tv.tv_usec * 1e-6) - (init_time.tv_usec * 1e-6);
 
+        /* Debug output */
         double ticks2 = newNode->tv.tv_sec + newNode->tv.tv_usec * 1e-6;
         printf("Resulting newNode tv value: %f\n", ticks2);
 
@@ -637,7 +639,7 @@ void insertAfterLast_test(ListRef L, struct timeval init_time, char *string, int
         L->length++;
 }
 
-
+//***********************************
 void print_list_alloc(ListRef L){
    NodeType *iterator;
    int alloc_count, alloc_active, alloc_mem, i;

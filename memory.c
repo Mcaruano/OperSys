@@ -20,11 +20,12 @@ init_time->tv_usec = 0;
 
 void *slug_malloc ( size_t size, char *WHERE ){
    
+   /* Debug output */
    double ticks = init_time.tv_sec + init_time.tv_usec * 1e-6;
    printf("slug_malloc init_time: %f\n", ticks);
 
    if(list == NULL){
-      /* record initial timestamp */
+      /* record initial timestamp, NOT WORKING */
       gettimeofday(&init_time, NULL);
       list = newList();
    }
