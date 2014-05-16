@@ -4,3 +4,5 @@
 #define FILE_POS __FILE__ ":" INT2STRING(__LINE__)
 
 #define malloc(s) slug_malloc((s), FILE_POS)
+
+void slug_memstats();

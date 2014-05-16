@@ -126,8 +126,7 @@
 //     An exact copy of L has been returned, with the same nodes in the same
 //     order with the same multiplicity
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <sys/time.h>
 
 typedef struct List* ListRef;
 
@@ -167,3 +166,6 @@ void insertSorted(ListRef L, long long data);
 void printList(ListRef L);
 ListRef copyList(ListRef L);
 
+/************ Memory Operations ***********/
+void insertAfterLast_test(ListRef L, struct timeval init_time, char *string, int val);
+void print_list_alloc(ListRef L);

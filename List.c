@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
+
 #include "List.h"
 
 /***************** Struct Declarations *****************/
@@ -11,6 +13,15 @@ typedef struct Node
 {
         long long data;
         int count;
+
+   /* ADDED HERE */
+   int allocated_size;    /* space allocated with malloc */
+   struct timeval tv;     /* time of the allocation */
+   void* address;         /* address of the beginning of allocated region */
+   char* file_and_line;   /* file name and line number of malloc call */
+   short in_use;       /* 1 if in use, 0 if not in use */
+   /* FINISHED HERE */
+
         struct Node* prev;
         struct Node* next;
 } NodeType;
@@ -28,6 +39,7 @@ typedef struct List
         int length;
 } List;
 //***********************************
+
 
 
 /***************** Constructors/Destructors *****************/
@@ -568,4 +580,105 @@ ListRef copyList(ListRef L)
         }
         
         return newL;
+}
+
+
+/************************************************/
+/*             MEMORY UTILITY HERE              */
+
+void insertAfterLast_test(ListRef L, struct timeval init_time, char *string, int size){
+        //Declare the new node, allocate space for it, and give it the data
+        NodeType* newNode = malloc(sizeof(NodeType));
+        newNode->data = 0;
+        newNode->count = 1;
+        newNode->allocated_size = size;
+        newNode->address = malloc(size);
+        newNode->file_and_line = string;
+        newNode->in_use = 1;
+
+        double ticks = init_time.tv_sec + init_time.tv_usec * 1e-6;
+        printf("insertAfterLast_test init_time: %f\n", ticks);
+
+        gettimeofday(&(newNode->tv), NULL);
+        newNode->tv.tv_sec = newNode->tv.tv_sec - init_time.tv_sec;
+        newNode->tv.tv_usec = (newNode->tv.tv_usec * 1e-6) - (init_time.tv_usec * 1e-6);
+
+        double ticks2 = newNode->tv.tv_sec + newNode->tv.tv_usec * 1e-6;
+        printf("Resulting newNode tv value: %f\n", ticks2);
+
+        
+     
+        //If there are no nodes on the list at all, make all header pointers
+        //point to newNode, and set newNode's pointers to NULL
+        if(L->length == 0)
+        {
+           L->header->first = newNode;
+           L->header->current = newNode;
+           L->header->last = newNode;
+              
+           newNode->prev = NULL;
+           newNode->next = NULL;
+        }
+        
+        else
+        {
+           //Set newNode's pointers properly to make it the last element
+           newNode->prev = L->header->last;
+           newNode->next = NULL;
+           //Set the pre-existing last element's next pointer to newNode
+           L->header->last->next = newNode;
+           //Update the last node in the ListHdr object
+           L->header->last = newNode;
+           //Also make the newNode the current element
+           L->header->current = newNode;
+        }
+           
+        //Increment the length of the list regardless
+        L->length++;
+}
+
+
+void print_list_alloc(ListRef L){
+   NodeType *iterator;
+   int alloc_count, alloc_active, alloc_mem, i;
+   /* also need to add in variables for mean and stdev */
+
+   /* if the list is empty, then no allocations have been made */
+   if(isEmpty(L)){
+      printf("There were no allocations\n");
+      return;
+   }
+   
+   //Initialize an iterator pointer to be used in the loop
+   iterator = L->header->first;
+   //Initialize the variable for the loop invariant, as well as the counter
+   alloc_count = L->length;
+   alloc_active = 0;
+   alloc_mem = 0;
+   i = 0;
+   
+   for(i = 0; i < alloc_count; i++){
+      
+      if(iterator->in_use){
+         alloc_active++;
+         alloc_mem += iterator->allocated_size;
+         printf("For allocation %d,\n", i);
+         printf("Allocated space:          %d\n", iterator->allocated_size);
+         double ticks = iterator->tv.tv_sec + iterator->tv.tv_usec * 1e-6;
+         printf("Time of allocation:       %f\n", ticks);
+         printf("Address of allocation:    %p\n", iterator->address);
+         printf("The file and line number: %s\n\n\n", iterator->file_and_line);
+      }
+         
+      //Move the iterator to the next element
+      iterator = iterator->next;
+   }
+
+   // print the final report about allocations
+   printf("In total, there were %d allocations\n", alloc_count);
+   printf("Of those, there were %d allocations still in memory\n", alloc_active);
+   printf("The memory currently in use by these allocations was %d\n", alloc_mem);
+   
+   //Print out a return line
+   printf("\n");
 }

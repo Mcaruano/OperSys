@@ -3,6 +3,8 @@
 
 int main(int argc, char *argv[])
 {
+   int i;
+
     /*Maybe use this main function to test*/
     printf("Beginning malloc test.\n");
 
@@ -18,5 +20,11 @@ int main(int argc, char *argv[])
     int value = object[0];
     printf("object[0] = %d\n", value);
 
-	return 0;
+    for(i = 0; i < 20; i ++){
+       malloc(i * 100);
+    }
+
+    slug_memstats();
+
+    return 0;
 }
