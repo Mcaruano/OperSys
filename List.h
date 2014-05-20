@@ -1,9 +1,12 @@
+/*
 //FILE: List.h
-//AUTHOR: Matt Caruano
-//VERSION: Original - created 04-17-2013
+//AUTHOR: Matt Caruano - Original - created 04-17-2013 
+//         
+//VERSION: Memory tracking modifications - created 05-20-2014
+//AUTHORS: Matt Caruano, Eric Evans, Taylor Caswell, Radhika Mitra, Mesuilame Mataitoga
 //
 //PURPOSE: This provides all of the functions necessary to manipulate a linked
-//list structure. The nodes of this structure can store a 'long long' type and 
+//list structure. The nodes of this structure can store a 'long' type and 
 //a regular 'int' type.
 //
 //
@@ -30,15 +33,15 @@
 //  int atLast(ListRef L)
 //     Returns True if the current pointer is pointing to the last element
 //
-//  long long getFirst(ListRef L)
+//  long getFirst(ListRef L)
 //     Precondition: !isEmpty()
 //     Returns the first element of the list
 //
-//  long long getLastListRef L)
+//  long getLastListRef L)
 //     Precondition: !isEmpty()
 //     Returns the last element of the list
 //
-//  long long getCurrent(ListRef L)
+//  long getCurrent(ListRef L)
 //     Precondition: !offEnd()
 //     Returns the element of the list that the current pointer is pointing to
 //
@@ -74,23 +77,23 @@
 //     Precondition: !offEnd()
 //     Postcondition: offEnd() only if atLast() was True
 //
-//  void insertBeforeFirst(ListRef L, long long data)
+//  void insertBeforeFirst(ListRef L, long data)
 //     Postcondition: !isEmpty()
 //     A node containing 'data' has been inserted before the first element of
 //     the list. It is now the first element.
 //
-//  void insertAfterLast(ListRef L, long long data)
+//  void insertAfterLast(ListRef L, long data)
 //     Postcondition: !isEmpty()
 //     A node containing 'data' has been inserted after the last element of
 //     the list. It is now the last element.
 //
-//  void insertBeforeCurrent(ListRef L, long long data)
+//  void insertBeforeCurrent(ListRef L, long data)
 //     Precondition: !offEnd()
 //     Postcondition: !isEmpty(), !offEnd()
 //     A node containing 'data' has been inserted before the element that the
 //     current pointer is pointing to. It is now the current element.
 //
-//  void insertAfterCurrent(ListRef L, long long data)
+//  void insertAfterCurrent(ListRef L, long data)
 //     Precondition: !offEnd()
 //     Postcondition: !isEmpty(), !offEnd()
 //     A node containing 'data' has been inserted after the element that the
@@ -110,7 +113,7 @@
 //     The current element of the list has been returned to memory. The current
 //     pointer now points to NULL
 //
-//  void insertSorted(ListRef L, long long data)
+//  void insertSorted(ListRef L, long data)
 //     Precondition: !offEnd()
 //     Postcondition: !isEmpty(), !offEnd()
 //     An element containing 'data' has been inserted to the list such that an
@@ -125,6 +128,7 @@
 //  ListRef copyList(ListRef L)
 //     An exact copy of L has been returned, with the same nodes in the same
 //     order with the same multiplicity
+*/
 
 #include <sys/time.h>
 
@@ -139,9 +143,9 @@ int isEmpty(ListRef L);
 int offEnd(ListRef L);
 int atFirst(ListRef L);
 int atLast(ListRef L);
-long long getFirst(ListRef L);
-long long getCurrent(ListRef L);
-long long getLast(ListRef L);
+long getFirst(ListRef L);
+long getCurrent(ListRef L);
+long getLast(ListRef L);
 int getLength(ListRef L);
 int equals(ListRef A, ListRef B);
 
@@ -152,21 +156,21 @@ void moveLast(ListRef L);
 void movePrev(ListRef L);
 void moveNext(ListRef L);
 
-void insertBeforeFirst(ListRef L, long long data);
-void insertAfterLast(ListRef L, long long data);
-void insertBeforeCurrent(ListRef L, long long data);
-void insertAfterCurrent(ListRef L, long long data);
+void insertBeforeFirst(ListRef L, long data);
+void insertAfterLast(ListRef L, long data);
+void insertBeforeCurrent(ListRef L, long data);
+void insertAfterCurrent(ListRef L, long data);
 
 void deleteFirst(ListRef L);
 void deleteLast(ListRef L);
 void deleteCurrent(ListRef L);
-void insertSorted(ListRef L, long long data);
+void insertSorted(ListRef L, long data);
 
 /************ Other Operations ************/
 void printList(ListRef L);
 ListRef copyList(ListRef L);
 
 /************ Memory Operations ***********/
-void insertNewNode(ListRef L, void* address, char *string, int val);
-void print_list_alloc(ListRef L);
-int is_allocated(ListRef L, void* address);
+void insertNewMemoryRecord(ListRef L, void* address, char *string, int val);
+void listPrintMemstats(ListRef L);
+int isAllocated(ListRef L, void* address);

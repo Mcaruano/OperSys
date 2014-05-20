@@ -2,68 +2,74 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+#include "List.h"              /* Doubly-linked list ADT */
 
-#include "List.h"
+#define MAX_SIZE 134217728     /* This is 2^27, or 128 MiB, indicating the maximum allowable allocation */
+int exit_set = 0;              /* Indicates if atexit() has been called for this program yet, default is 0 */
+ListRef list = NULL;           /* Initializes a pointer to a ListRef object, to be allocated and used to track memory statistics */
 
-#define MAX_SIZE 134217728     /* this is 2^27, or 128 MiB */
+void slug_memstats(void);      /* Forward declaration for use in slug_malloc */
 
-int exit_val = 0; 
 
-ListRef list = NULL;
+/*******************************************************************/
+void *slug_malloc (size_t size, char *WHERE){
+  void* address;
 
-void slug_memstats(void);
+  /* If atexit() hasn't been set for this program, call it */
+  if (exit_set == 0 ) { 
+    exit_set = 1; 
+    atexit(slug_memstats);
+  }
 
-void *slug_malloc ( size_t size, char *WHERE ){
+  address = malloc(size);
 
-   if (exit_val == 0 ) { 
-      exit_val = 1; 
-      atexit (slug_memstats);
-   }
+  /* If malloc failed, indicate so */
+  if(address == NULL){
+    fprintf(stderr, "Malloc failed in slug_malloc at %s\n", WHERE);
+    return address;
+  }
 
-   void* address = malloc(size);
-   if(address == NULL)
-   {
-      fprintf(stderr, "Malloc failed in slug_malloc at %s\n", WHERE);
-      return address;
-   }
+  /* If the list has not been created/initialized yet, do so */
+  if(list == NULL){
+    list = newList();
+  }
 
-   printf("The address that called slug_malloc is: %p\n", address);
+  /* TODO: THIS CODE NEVER GETS EXECUTED, ANY MALLOC OF SIZE 0 RETURNS NULL AND IS CAUGHT BY address==NULL above */
+  /* If we're mallocing something of size 0, indicate to the user that something might be wrong */
+  if (size == 0){
+    fprintf(stderr, "Warning: Malloc of size 0 performed, this might suggest a bug in your program.\n");
+  }
 
-   if(list == NULL){
-      list = newList();
-   }
-   
-   if (size == 0 ) {
-      fprintf(stderr, "This is an atypical operation!\n");
-   }
-   
-   if (size >= MAX_SIZE) { 
-      fprintf(stderr, "Allocation too large!\n");
-      exit (1);
-   }
+  /* Enforce maximum allocation size restriction */
+  if (size >= MAX_SIZE){ 
+    fprintf(stderr, "Allocation too large!\n");
+    exit (1);
+  }
 
-   insertNewNode(list, address, WHERE, size);
-   
-   return address;
+  /* Insert a record for this allocation into our linked-list */
+  insertNewMemoryRecord(list, address, WHERE, size);
+
+  return address;
 }
 
-void slug_free ( void *addr, char *WHERE ){
-   printf("The address that called slug_free is: %p\n", addr);
-   int check; 
-   check = is_allocated(list, addr);
-   switch (check) {
-      case 0: printf("The address that is being freed is: %p\n", addr);
-              free(addr);
-              break;
-      case 1: fprintf(stderr, "Tried to free unallocated memory location %p at %s\n", addr, WHERE);
-              exit(1);
-      case 2: fprintf(stderr, "Tried to free already free memory %p at %s\n", addr, WHERE);
-              exit (1);
-              break;
-      default: break;
+/*******************************************************************/
+void slug_free (void *addr, char *WHERE){
+  int check; 
+  check = isAllocated(list, addr);
+
+  switch(check){
+    case 0: free(addr);
+            break;
+    case 1: fprintf(stderr, "Tried to free unallocated memory location %p at %s\n", addr, WHERE);
+            exit(1);
+    case 2: fprintf(stderr, "Tried to free already free memory %p at %s\n", addr, WHERE);
+            exit (1);
+            break;
+    default: break;
   }
 }
 
-void slug_memstats ( void ){
-   print_list_alloc(list);
+/*******************************************************************/
+void slug_memstats (void){
+  listPrintMemstats(list);
 }

@@ -1,8 +1,7 @@
-3) implement slug_free(), to do that:
-e?) possibly keep note of a boolean object that keeps track to see if we have seen a node that had the correct address, but was already deallocated, use this to give an error message indicating such for better bug reporting
+1) Implement stdev and mean for insertNewMemoryRecord in List.c
+2) Make sure logic is solid for slug_free, and COMMENT isAllocated AND slug_free to indicate which return values indicate what
+3) Write test cases to accomplish show the program works, specs may have a good idea of what sort of tests we should use.
+4) Finish design doc
 
-4) figure out how to use that function that will include the call to slug_memstats() when the program ends.
-5) need to adjust existing code to format correctly for the cc in minix. This includes variable declarations being at the top of functions they exist in, comments only being of type /**/.
-6) upload to minix, make sure everything works fine there.
-7) write test cases to accomplish show the program works, specs may have a good idea of what sort of tests we should use.
-8) finish design doc
+BUGS:
+- memory.c:37 - Case of size == 0 is never caught, see comment
