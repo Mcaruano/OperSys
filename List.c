@@ -19,7 +19,7 @@ typedef struct Node
    struct timeval tv;     /* time of the allocation */
    void* address;         /* address of the beginning of allocated region */
    char* file_and_line;   /* file name and line number of malloc call */
-   short in_use;       /* 1 if in use, 0 if not in use */
+   int in_use;       /* 1 if in use, 0 if not in use */
    /* FINISHED HERE */
 
         struct Node* prev;
@@ -586,27 +586,28 @@ ListRef copyList(ListRef L)
 /************************************************/
 /*             MEMORY UTILITY HERE              */
 
-void insertAfterLast_test(ListRef L, struct timeval init_time, char *string, int size){
+void insertAfterLast_test(ListRef L, void* address, char *string, int size){
         //Declare the new node, allocate space for it, and give it the data
         NodeType* newNode = malloc(sizeof(NodeType));
         newNode->data = 0;
         newNode->count = 1;
         newNode->allocated_size = size;
-        newNode->address = malloc(size);
+        gettimeofday(&(newNode->tv), NULL);
+        newNode->address = address;
         newNode->file_and_line = string;
         newNode->in_use = 1;
 
         /* Debug output */
-        double ticks = init_time.tv_sec + init_time.tv_usec * 1e-6;
+        /*double ticks = init_time.tv_sec + init_time.tv_usec * 1e-6;
         printf("insertAfterLast_test init_time: %f\n", ticks);
 
         gettimeofday(&(newNode->tv), NULL);
         newNode->tv.tv_sec = newNode->tv.tv_sec - init_time.tv_sec;
         newNode->tv.tv_usec = (newNode->tv.tv_usec * 1e-6) - (init_time.tv_usec * 1e-6);
 
-        /* Debug output */
+        *//* Debug output *//*
         double ticks2 = newNode->tv.tv_sec + newNode->tv.tv_usec * 1e-6;
-        printf("Resulting newNode tv value: %f\n", ticks2);
+        printf("Resulting newNode tv value: %f\n", ticks2);*/
 
         
      
@@ -659,6 +660,9 @@ void print_list_alloc(ListRef L){
    alloc_mem = 0;
    i = 0;
    
+
+   printf("These are the allocations that have not been freed:\n");
+
    for(i = 0; i < alloc_count; i++){
       
       if(iterator->in_use){
@@ -679,8 +683,39 @@ void print_list_alloc(ListRef L){
    // print the final report about allocations
    printf("In total, there were %d allocations\n", alloc_count);
    printf("Of those, there were %d allocations still in memory\n", alloc_active);
-   printf("The memory currently in use by these allocations was %d\n", alloc_mem);
+   printf("The total size of memory currently in use by these allocations was %d bytes\n", alloc_mem);
    
    //Print out a return line
    printf("\n");
+}
+
+int is_allocated(ListRef L, void* address){
+  NodeType *iterator;
+
+   /* if the list is empty, then no allocations have been made */
+   if(isEmpty(L)){
+      printf("There were no allocations\n");
+      return;
+   }
+   
+   int i, alloc_count;
+
+   //Initialize an iterator pointer to be used in the loop
+   iterator = L->header->first;
+
+   //Initialize the variable for the loop invariant
+   alloc_count = L->length;
+
+   for(i = 0; i < alloc_count; i++){
+      
+      if(iterator->address == address && iterator->in_use){
+        iterator->in_use = 0;
+        return 1;
+      }
+         
+      //Move the iterator to the next element
+      iterator = iterator->next;
+   }
+
+return 0;
 }

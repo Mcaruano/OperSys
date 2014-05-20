@@ -5,48 +5,51 @@
 
 #include "List.h"
 
-/*int main(int argc, char *argv[])
-{
-    /*Maybe use this main function to test*//*
-	return 0;
-}*/
-
 #define MAX_SIZE 134217728     /* this is 2^27, or 128 MiB */
 
 ListRef list = NULL;
-struct timeval init_time;
-init_time->tv_sec = 0;
-init_time->tv_usec = 0;
 
 void *slug_malloc ( size_t size, char *WHERE ){
    
-   /* Debug output */
-   double ticks = init_time.tv_sec + init_time.tv_usec * 1e-6;
-   printf("slug_malloc init_time: %f\n", ticks);
+   void* address = malloc(size);
+   if(address == NULL)
+   {
+      fprintf(stderr, "Malloc failed in slug_malloc at %s\n", WHERE);
+      return address;
+   }
+
+   printf("The address that called slug_malloc is: %p\n", address);
 
    if(list == NULL){
-      /* record initial timestamp, NOT WORKING */
-      gettimeofday(&init_time, NULL);
       list = newList();
    }
    
    if (size == 0 ) {
-      fprintf(stderr,  "This an unusual operation!\n");
+      fprintf(stderr, "This is an atypical operation!\n");
    }
    
    if (size >= MAX_SIZE) { 
-      fprintf(stderr,  "Allocation too large!\n");
+      fprintf(stderr, "Allocation too large!\n");
       exit (1);
    }
 
-   insertAfterLast_test(list, init_time, WHERE, size);
+   insertAfterLast_test(list, address, WHERE, size);
    
-   printf("%s\n", WHERE);
-   return malloc(size);
+   return address;
 }
 
 void slug_free ( void *addr, char *WHERE ){
-   
+   printf("The address that called slug_free is: %p\n", addr);
+
+   if (is_allocated(list, addr)){
+      printf("The address that is being freed is: %p\n", addr);
+      free(addr);
+   }
+
+   else {
+      fprintf(stderr, "Tried to free unallocated memory location %p at %s\n", addr, WHERE);
+      exit(1);
+   }
 }
 
 void slug_memstats ( void ){

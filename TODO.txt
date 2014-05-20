@@ -1,0 +1,8 @@
+3) implement slug_free(), to do that:
+e?) possibly keep note of a boolean object that keeps track to see if we have seen a node that had the correct address, but was already deallocated, use this to give an error message indicating such for better bug reporting
+
+4) figure out how to use that function that will include the call to slug_memstats() when the program ends.
+5) need to adjust existing code to format correctly for the cc in minix. This includes variable declarations being at the top of functions they exist in, comments only being of type /**/.
+6) upload to minix, make sure everything works fine there.
+7) write test cases to accomplish show the program works, specs may have a good idea of what sort of tests we should use.
+8) finish design doc
