@@ -167,6 +167,6 @@ void printList(ListRef L);
 ListRef copyList(ListRef L);
 
 /************ Memory Operations ***********/
-void insertAfterLast_test(ListRef L, void* address, char *string, int val);
+void insertNewNode(ListRef L, void* address, char *string, int val);
 void print_list_alloc(ListRef L);
 int is_allocated(ListRef L, void* address);

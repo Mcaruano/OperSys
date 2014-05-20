@@ -25,8 +25,6 @@ int main(int argc, char *argv[])
     }
 
     free(object);
-    
-    slug_memstats();
 
     return 0;
 }
