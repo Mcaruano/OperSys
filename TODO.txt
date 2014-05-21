@@ -1,8 +1,0 @@
-1) Implement stdev and mean for insertNewMemoryRecord in List.c
-2) Make sure logic is solid for slug_free, and COMMENT isAllocated AND slug_free to indicate which return values indicate what
-3) Write test cases to accomplish show the program works, specs may have a good idea of what sort of tests we should use.
-4) Finish design doc
-5) Update READMEs
-
-BUGS:
-- memory.c:37 - Case of size == 0 is never caught, see comment
