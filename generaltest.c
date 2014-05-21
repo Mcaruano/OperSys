@@ -6,6 +6,7 @@ int main(int argc, char *argv[])
    int i;
    int *object;
    int value;
+   char *temp;
 
     /*Maybe use this main function to test*/
     printf("Beginning general malloc test.\n");
@@ -17,8 +18,9 @@ int main(int argc, char *argv[])
     	return 0;
     }
 
-    for(i = 0; i < 20; i ++){
-       malloc(i * 100);
+    for(i = 0; i < 10000; i ++){
+       temp = (char*) malloc(i * 10);
+       free(temp);
     }
 
     object[0] = 32;

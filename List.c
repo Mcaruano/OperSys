@@ -733,7 +733,10 @@ void listPrintMemstats(ListRef L)
 int isAllocated(ListRef L, void* address)
 {
   NodeType *iterator;
-  int i, alloc_count;
+  int i, alloc_count, double_free;
+
+  /* initialize the case to not having found a double_free */
+  double_free = 0;
 
   /* If the list is empty, then no allocations have been made */
   if(isEmpty(L)){
@@ -747,20 +750,39 @@ int isAllocated(ListRef L, void* address)
   /* Initialize the variable for the loop invariant */
   alloc_count = L->length;
 
+  /* iterate through each entry in the allocation list */
   for(i = 0; i < alloc_count; i++){
 
+     /* if the memory is currently allocated, return 0 to indicate such */
     if(iterator->address == address && iterator->in_use){
       iterator->in_use = 0;
       return 0;
     } 
 
+    /* if the memory was allocated, but already freed, set double_free to
+       1 to indicate that we saw such a thing */
     else if (iterator->address == address && !(iterator->in_use)){
-      return 2; 
+      double_free = 1;
     }   
+
+    /* if the user is attempting to free using an address that is inside
+       a currently allocated block, return 3 to indicate such a thing */
+    else if (iterator->address < address && 
+             (int)(iterator->address) + iterator->allocated_size >= (int)address &&
+             iterator->in_use){
+      return 3;
+    }
 
     /* Move the iterator to the next element */
     iterator = iterator->next;
   }
 
+  /* if we found an attempt at a double free and no good allocation to
+     indicate otherwise, return 2 to indicate such */
+  if(double_free){
+     return 2;
+  }
+
+  /* if it reaches here, then it wasn't an allocated space and it didn't have a special case, return 1 to indicate such */
   return 1;
 } 
