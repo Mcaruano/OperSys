@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
    int value;
 
     /*Maybe use this main function to test*/
-    printf("Beginning malloc test.\n");
+    printf("Beginning general malloc test.\n");
 
     object = (int*) malloc(10);
 
@@ -17,15 +17,11 @@ int main(int argc, char *argv[])
     	return 0;
     }
 
-    printf("malloc succeeded!\n");
-    object[0] = 32;
-    value = object[0];
-    printf("object[0] = %d\n", value);
-
     for(i = 0; i < 20; i ++){
        malloc(i * 100);
     }
 
+    object[0] = 32;
     free(object);
 
     return 0;
