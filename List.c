@@ -639,6 +639,12 @@ ListRef copyList(ListRef L)
 /*******************************************************************/
 /*                  MEMORY UTILITY FUNCTIONS                       */
 
+/* creates a new node for the list with passed in params. this entry keeps track
+   of a block allocated memory.
+   ListRef L is the main list structure
+   void* address is the beginning address of the allocated block of memory
+   char *string contains the file and line number of the original malloc call
+   int size is the size of the allocated block */
 void insertNewMemoryRecord(ListRef L, void* address, char *string, int size)
 {
   /* Declare the new node, allocate space for it, and give it the data */
@@ -680,7 +686,13 @@ void insertNewMemoryRecord(ListRef L, void* address, char *string, int size)
   L->length++;
 }
 
-/*******************************************************************/
+/* prints out a statement for each currently valid allocation, along with an overall
+   summary of all allocations. Each individual statement includes the which number of
+   allocation it was, the space allocated in this block, the epoch time of the 
+   allocation, the beginning address of the block of memory, and the file and line 
+   number of the malloc call. The summary includes how many allocations there were
+   in total, the number of allocations still in memory, the number of bytes still
+   allocated, the mean and the standard deviation of the sizes of allocations made */
 void listPrintMemstats(ListRef L)
 {
   NodeType *iterator;
@@ -751,7 +763,14 @@ void listPrintMemstats(ListRef L)
   printf("\n");
 }
 
-/*******************************************************************/
+/* checks to see if the address passed in is the beginning address of an allocate 
+   block of memory.
+   returns 0 if it was a valid free
+   returns 1 if it was an invalid free
+   returns 2 if it was an invalid free that looked like a double free
+   returns 3 if it was an invalid free that was trying to free inside an allocated block
+   ListRef L is the main list structure
+   void* address is the address that is being checked if it a valid free */
 int isAllocated(ListRef L, void* address)
 {
   NodeType *iterator;

@@ -12,7 +12,11 @@ ListRef list = NULL;           /* Initializes a pointer to a ListRef object, to 
 void slug_memstats(void);      /* Forward declaration for use in slug_malloc */
 
 
-/*******************************************************************/
+/* attempts to allocate memory for the caller, while keeping track of the allocated
+   block in a list structure.
+   size_t size is the size of the allocated chunk you want.
+   char *WHERE is a string containing the file name and line number of where the 
+   original call to malloc occured. */
 void *slug_malloc (size_t size, char *WHERE){
   void* address;
 
@@ -55,7 +59,12 @@ void *slug_malloc (size_t size, char *WHERE){
   return address;
 }
 
-/*******************************************************************/
+/* checks if the passed in addr is a valid beginning of an allocated block of memory. 
+   if it is, the function goes ahead and frees the block and updates the corresponding
+   entry in the list structure.
+   void *addr is the beginning of the block of memory to be freed
+   char *WHERE is string containing the file name and line number of where the 
+   original call to malloc occured. */
 void slug_free (void *addr, char *WHERE){
   int check; 
 
@@ -90,7 +99,9 @@ void slug_free (void *addr, char *WHERE){
   }
 }
 
-/*******************************************************************/
+/* prints out relevant information from each entry of the list, as well as a general
+   summary of all the allocations. Assumed to be called upon program ending using 
+   atexit() */
 void slug_memstats (void){
   listPrintMemstats(list);
 }
