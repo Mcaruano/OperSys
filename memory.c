@@ -84,7 +84,7 @@ void slug_free (void *addr, char *WHERE){
     case 3: fprintf(stderr, "Tried to free using a pointer inside a chunk of memory using address %p at %s\n",
                     addr, WHERE);
             exit(1);
-  
+    
     /* required default that can't be reached */
     default: break;
   }
