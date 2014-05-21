@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <math.h>
 
 #include "List.h"
 
@@ -684,8 +685,7 @@ void listPrintMemstats(ListRef L)
 {
   NodeType *iterator;
   int alloc_count, alloc_active, alloc_mem, i;
-  double ticks;
-  /* TODO:  need to add in variables for mean and stdev */
+  double ticks, size_sum, size_mean, std_dev;
 
   /* if the list is empty, then no allocations have been made */
   if(isEmpty(L)){
@@ -699,11 +699,15 @@ void listPrintMemstats(ListRef L)
   alloc_count = L->length;
   alloc_active = 0;
   alloc_mem = 0;
+  size_sum = 0;
 
 
   printf("These are the allocations that have not been freed:\n");
 
+  /* Iterate through the list and perform necessary calculations and print statements */
   for(i = 0; i < alloc_count; i++){
+
+    size_sum += iterator->allocated_size;
     
     if(iterator->in_use){
       alloc_active++;
@@ -720,10 +724,25 @@ void listPrintMemstats(ListRef L)
     iterator = iterator->next;
   }
 
+  printf("sum = %g, alloc count = %g", size_sum, alloc_count);
+  size_mean = size_sum / alloc_count;
+  size_sum = 0;
+  iterator = L->header->first;
+
+  /* Iterate through the list again to calculate the standard deviation of allocation sizes */
+  for(i = 0; i < alloc_count; i++){
+
+    size_sum += pow(iterator->allocated_size - size_mean, 2);
+
+  }
+
+  std_dev = sqrt(size_sum / alloc_count);
+
   /* Print the final report about allocations */
   printf("In total, there were %d allocations\n", alloc_count);
   printf("Of those, there were %d allocations still in memory\n", alloc_active);
   printf("The total size of memory currently in use by these allocations was %d bytes\n", alloc_mem);
+  printf("The average allocation size was %g bytes, with a standard deviation of %g bytes", size_mean, std_dev);
 
   /* Print out a return line */
   printf("\n");
