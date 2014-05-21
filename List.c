@@ -687,6 +687,9 @@ void listPrintMemstats(ListRef L)
   int alloc_count, alloc_active, alloc_mem, i;
   double ticks, size_sum, size_mean, std_dev;
 
+  /* Print out a return line */
+  printf("\n");
+
   /* if the list is empty, then no allocations have been made */
   if(isEmpty(L)){
     printf("There were no allocations\n");
@@ -724,7 +727,6 @@ void listPrintMemstats(ListRef L)
     iterator = iterator->next;
   }
 
-  printf("sum = %g, alloc count = %g", size_sum, alloc_count);
   size_mean = size_sum / alloc_count;
   size_sum = 0;
   iterator = L->header->first;
@@ -733,6 +735,7 @@ void listPrintMemstats(ListRef L)
   for(i = 0; i < alloc_count; i++){
 
     size_sum += pow(iterator->allocated_size - size_mean, 2);
+    iterator = iterator->next;
 
   }
 
@@ -742,7 +745,7 @@ void listPrintMemstats(ListRef L)
   printf("In total, there were %d allocations\n", alloc_count);
   printf("Of those, there were %d allocations still in memory\n", alloc_active);
   printf("The total size of memory currently in use by these allocations was %d bytes\n", alloc_mem);
-  printf("The average allocation size was %g bytes, with a standard deviation of %g bytes", size_mean, std_dev);
+  printf("The average allocation size was %g bytes, with a standard deviation of %g bytes\n", size_mean, std_dev);
 
   /* Print out a return line */
   printf("\n");
