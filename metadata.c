@@ -4,5 +4,5 @@
 
 void metadata_read(){
 	register message *msgptr = malloc(sizeof(message));
-	_syscall(VFS, 83, msgptr);
+	_syscall(VFS, 65, msgptr);
 }
