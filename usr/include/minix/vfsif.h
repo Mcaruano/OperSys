@@ -114,7 +114,6 @@ typedef struct {
 #define REQ_RDLINK	(VFS_BASE + 30)
 #define REQ_GETDENTS	(VFS_BASE + 31)
 #define REQ_STATVFS		(VFS_BASE + 32)
-#define REQ_METAREAD    (VFS_BASE + 33)
 
 #define NREQS                   33
 
@@ -131,8 +130,7 @@ typedef struct {
 
 #define PFS_NREQS		7
 
-#define IS_PFS_VFS_RQ(type)	(type >= PFS_BASE && \
-					type < (PFS_BASE + PFS_NREQS))
+#define IS_PFS_VFS_RQ(type)	(type >= PFS_BASE && type < (PFS_BASE + PFS_NREQS))
 
 #endif
 

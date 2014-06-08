@@ -18,6 +18,7 @@
 #include <minix/endpoint.h>
 #include <minix/u64.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <minix/vfsif.h>
 #include "fproc.h"
 #include "vmnt.h"
@@ -767,6 +768,8 @@ unsigned int *cum_iop;
   cp_grant_id_t grant_id;
   message m;
 
+
+
   if (ex64hi(pos) != 0)
 	  panic("req_readwrite: pos too large");
 
@@ -777,11 +780,12 @@ unsigned int *cum_iop;
 
   /* Fill in request message */
   m.m_type = rw_flag == READING ? REQ_READ : REQ_WRITE;
-  m.REQ_INODE_NR = inode_nr;
-  m.REQ_GRANT = grant_id;
-  m.REQ_SEEK_POS_LO = ex64lo(pos);
-  m.REQ_SEEK_POS_HI = 0;	/* Not used for now, so clear it. */
-  m.REQ_NBYTES = num_of_bytes;
+  m.REQ_INODE_NR = inode_nr;  /* m9_l1 */
+  m.REQ_GRANT = grant_id;     /* m9_l2 */
+  m.REQ_SEEK_POS_LO = ex64lo(pos);  /* m9_l4 */
+  m.REQ_SEEK_POS_HI = 0;	/* Not used for now, so clear it. - m9_l3 */
+  m.REQ_NBYTES = num_of_bytes;  /* m9_l5 */
+  m.REQ_REN_LEN_OLD = 0;   /* Changed for Metadata handling */
   
   /* Send/rec request */
   r = fs_sendrec(fs_e, &m);
@@ -1174,3 +1178,57 @@ PRIVATE int fs_sendrec_f(char *file, int line, endpoint_t fs_e, message *reqm)
   return(reqm->m_type);
 }
 
+
+
+
+/* ***************************************** CUSTOM METADATA CODE ***************************************** */
+/*===========================================================================*
+ *        req_readwrite            *
+ *===========================================================================*/
+PUBLIC int req_mreadwrite(fs_e, inode_nr, pos, rw_flag, user_e,
+  user_addr, num_of_bytes, new_posp, cum_iop)
+endpoint_t fs_e;
+ino_t inode_nr;
+u64_t pos;
+int rw_flag;
+endpoint_t user_e;
+char *user_addr;
+unsigned int num_of_bytes;
+u64_t *new_posp;
+unsigned int *cum_iop;
+{
+  int r;
+  cp_grant_id_t grant_id;
+  message m;
+  m.REQ_REN_LEN_OLD = -1;  /* Set Metadata flag */  
+
+  printf("Called req_mreadwrite()\n");
+
+  if (ex64hi(pos) != 0)
+    panic("req_readwrite: pos too large");
+
+  grant_id = cpf_grant_magic(fs_e, user_e, (vir_bytes) user_addr, num_of_bytes,
+             (rw_flag==READING ? CPF_WRITE:CPF_READ));
+  if (grant_id == -1)
+    panic("req_readwrite: cpf_grant_magic failed");
+
+  /* Fill in request message */
+  m.m_type = rw_flag == READING ? REQ_READ : REQ_WRITE;
+  m.REQ_INODE_NR = inode_nr;  /* m9_l1 */
+  m.REQ_GRANT = grant_id;     /* m9_l2 */
+  m.REQ_SEEK_POS_LO = ex64lo(pos);  /* m9_l4 */
+  m.REQ_SEEK_POS_HI = 0;  /* Not used for now, so clear it. - m9_l3 */
+  m.REQ_NBYTES = num_of_bytes;  /* m9_l5 */
+  
+  /* Send/rec request */
+  r = fs_sendrec(fs_e, &m);
+  cpf_revoke(grant_id);
+
+  if (r == OK) {
+  /* Fill in response structure */
+  *new_posp = cvul64(m.RES_SEEK_POS_LO);
+  *cum_iop = m.RES_NBYTES;
+  }
+  
+  return(r);
+}

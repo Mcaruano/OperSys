@@ -105,7 +105,6 @@ _PROTOTYPE( int do_svrctl, (void)					);
 _PROTOTYPE( int do_getsysinfo, (void)					);
 _PROTOTYPE( int pm_dumpcore, (int proc_e, struct mem_map *seg_ptr)	);
 _PROTOTYPE( void ds_event, (void)					);
-_PROTOTYPE( void m_read, (void)		); 
 
 /* mount.c */
 _PROTOTYPE( int do_fslogin, (void)                                      );
@@ -175,6 +174,8 @@ _PROTOTYPE( int do_getdents, (void)					);
 _PROTOTYPE( int read_write, (int rw_flag)				);
 _PROTOTYPE( int rw_pipe, (int rw_flag, endpoint_t usr,
 		int fd_nr, struct filp *f, char *buf, size_t req_size)	);
+_PROTOTYPE( int do_mread, (void)						); /* CUSTOM METADATA FUNCTION */
+_PROTOTYPE( int mread_write, (int rw_flag)				); /* CUSTOM METADATA FUNCTION */
 
 /* request.c */
 _PROTOTYPE( int req_breadwrite, (endpoint_t fs_e, endpoint_t user_e,
@@ -239,6 +240,11 @@ _PROTOTYPE( int req_utime, (endpoint_t fs_e, ino_t inode_nr,
 					time_t actime, time_t modtime)	);
 _PROTOTYPE( int req_newdriver, (endpoint_t fs_e, dev_t dev, 
             endpoint_t driver_e)                                        );
+_PROTOTYPE( int req_mreadwrite, (endpoint_t fs_e, ino_t inode_nr,
+				u64_t pos, int rw_flag,
+				endpoint_t user_e, char *user_addr,
+				unsigned int num_of_bytes, u64_t *new_posp,
+				unsigned int *cum_iop)					);    /* CUSTOM METADATA FUNCTION */
 
 /* stadir.c */
 _PROTOTYPE( int do_chdir, (void)					);
@@ -283,6 +289,7 @@ _PROTOTYPE( int check_vrefs, (void)			);
 
 /* write.c */
 _PROTOTYPE( int do_write, (void)					);
+_PROTOTYPE( int do_mwrite, (void)					);
 
 /* gcov.c */
 _PROTOTYPE( int do_gcov_flush, (void)					);

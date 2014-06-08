@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <minix/com.h>
 #include <minix/u64.h>
 #include "buf.h"
@@ -39,6 +40,11 @@ PUBLIC int fs_readwrite(void)
   size_t nrbytes;
   
   r = OK;
+
+  /* ****** CUSTOM METADATA CODE ****** */
+  if(fs_m_in.REQ_REN_LEN_OLD == -1){
+    printf("HOLY FUCK THIS SHIT WORKED!\n");
+  }
   
   /* Find the inode referred */
   if ((rip = find_inode(fs_dev, (ino_t) fs_m_in.REQ_INODE_NR)) == NULL)
@@ -132,6 +138,7 @@ PUBLIC int fs_readwrite(void)
   }
   
   fs_m_out.RES_NBYTES = cum_io;
+  printf("HOLY FUCK THIS SHIT WORKED STILL!\n");
   
   return(r);
 }
