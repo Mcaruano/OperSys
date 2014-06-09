@@ -29,8 +29,10 @@ PRIVATE struct inode *rdahed_inode;      /* pointer to inode to read ahead */
  *===========================================================================*/
 PUBLIC int fs_readwrite(void)
 {
+  block_t b;
+  struct buf *bp;
   int r, rw_flag, block_spec;
-  int regular;
+  int regular, scale;
   cp_grant_id_t gid;
   off_t position, f_size, bytes_left;
   unsigned int off, cum_io, block_size, chunk;
@@ -41,14 +43,35 @@ PUBLIC int fs_readwrite(void)
   
   r = OK;
 
-  /* ****** CUSTOM METADATA CODE ****** */
-  if(fs_m_in.REQ_REN_LEN_OLD == -1){
-    printf("HOLY FUCK THIS SHIT WORKED!\n");
-  }
   
   /* Find the inode referred */
   if ((rip = find_inode(fs_dev, (ino_t) fs_m_in.REQ_INODE_NR)) == NULL)
 	return(EINVAL);
+
+  /* ****** CUSTOM METADATA CODE ****** */
+  if(fs_m_in.REQ_REN_LEN_OLD == -1){
+   /* rip->i_zone[9] = (unsigned long*) malloc(sizeof(int));
+    *(void*)(rip->i_zone[9]) = 9;
+
+    printf(" IZONE9 WAS ALLOCATED, AND IT HELD %d\n", (int) *(void*)(rip->i_zone[9]));*/
+    scale = rip->i_sp->s_log_zone_size;
+    if(rip->i_zone[9] == NO_ZONE)
+    {
+      rip->i_zone[9] = alloc_zone(rip->i_dev, rip->i_zone[9]);
+      b = (block_t)rip->i_zone[9]<<scale;
+      bp = get_block(rip->i_dev,b,NORMAL);
+      zero_block(bp);
+      printf("\nzone is allocated for the program \n");
+    }
+    else
+    {
+      printf("Retrieving the zone[9] from the inode \n");
+      b = (block_t)rip->i_zone[9]<<scale;
+      bp = get_block(rip->i_dev,b,NORMAL);
+    }
+
+
+  }
 
   mode_word = rip->i_mode & I_TYPE;
   regular = (mode_word == I_REGULAR || mode_word == I_NAMED_PIPE);
@@ -138,7 +161,6 @@ PUBLIC int fs_readwrite(void)
   }
   
   fs_m_out.RES_NBYTES = cum_io;
-  printf("HOLY FUCK THIS SHIT WORKED STILL!\n");
   
   return(r);
 }
